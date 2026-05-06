@@ -1,0 +1,308 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+
+    <style>
+      body {
+        font-family: Arial;
+        padding: 20px;
+      }
+      .container {
+        max-width: 900px;
+        margin: auto;
+      }
+      canvas {
+        width: 100% !important;
+        margin-top: 20px;
+      }
+      h3 {
+        margin-top: 30px;
+      }
+
+      .card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+input, select, button {
+  padding: 8px;
+  margin: 5px 0;
+  width: 100%;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+ul li {
+  background: #f5f5f5;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+}
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Dashboard Booking</h2>
+
+      <!-- ================= ADMIN ================= -->
+      <div id="adminUI" style="display: none">
+        <button onclick="loadData()">Refresh Data</button>
+
+        <div id="adminUI" style="display: none">
+          ...
+          <h3>Manajemen User</h3>
+          <ul id="userList"></ul>
+        </div>
+
+        <h3>Okupansi Lapangan</h3>
+        <canvas id="okupansiChart"></canvas>
+
+        <h3>Peak Hour</h3>
+        <canvas id="peakChart"></canvas>
+
+        <h3>Pembatalan</h3>
+        <canvas id="cancelChart"></canvas>
+      </div>
+
+      <h3>Manajemen User</h3>
+      <ul id="userList"></ul>
+
+      <!-- ================= MEMBER ================= -->
+      <div id="memberUI" style="display:none;">
+  <div class="card">
+    <h3>Booking Lapangan</h3>
+
+    <input id="lapangan_id" placeholder="ID Lapangan">
+    <input type="date" id="tanggal">
+<input type="time" id="jam_mulai" min="08:00" max="22:00" step="3600">
+<input type="time" id="jam_selesai" min="08:00" max="22:00" step="3600">
+
+    <button onclick="booking()">Booking</button>
+  </div>
+
+  <div class="card">
+    <h3>Booking Saya</h3>
+    <ul id="myBooking"></ul>
+  </div>
+</div>
+
+      <!-- ================= OPERATOR ================= -->
+      <div id="operatorUI" style="display:none;">
+  <div class="card">
+    <h3>Manajemen Sesi</h3>
+    <ul id="allSesi"></ul>
+  </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      let okupansiChart, peakChart, cancelChart;
+
+      /* ================= TOKEN ================= */
+      const token = localStorage.getItem("token");
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const role = payload.role;
+
+      /* ================= ROLE ================= */
+      if (role === "admin") {
+  document.getElementById("adminUI").style.display = "block";
+  loadAdmin(); // ← panggil ini
+} 
+else if (role === "member") {
+  loadMember();
+} 
+else if (role === "operator") {
+  loadOperator();
+}
+
+// letakkan di luar if
+function loadAdmin() {
+  loadData();   // chart
+  loadUsers();  // user list
+}
+      /* ================= ADMIN ================= */
+      async function loadData() {
+        const okupansi = await fetch(
+          "http://localhost:3000/api/jadwal/okupansi",
+        ).then((r) => r.json());
+        const peak = await fetch(
+          "http://localhost:3000/api/jadwal/peak-hour",
+        ).then((r) => r.json());
+        const cancel = await fetch(
+          "http://localhost:3000/api/jadwal/pembatalan",
+        ).then((r) => r.json());
+
+        if (okupansiChart) okupansiChart.destroy();
+        if (peakChart) peakChart.destroy();
+        if (cancelChart) cancelChart.destroy();
+
+        okupansiChart = new Chart(document.getElementById("okupansiChart"), {
+          type: "bar",
+          data: {
+            labels: okupansi.map((x) => "Lapangan " + x.lapangan_id),
+            datasets: [{ data: okupansi.map((x) => x.total) }],
+          },
+        });
+
+        peakChart = new Chart(document.getElementById("peakChart"), {
+          type: "bar",
+          data: {
+            labels: peak.map((x) => x.jam_mulai),
+            datasets: [{ data: peak.map((x) => x.total) }],
+          },
+        });
+
+        cancelChart = new Chart(document.getElementById("cancelChart"), {
+          type: "line",
+          data: {
+            labels: cancel.map((x) => x.tanggal),
+            datasets: [{ data: cancel.map((x) => x.total) }],
+          },
+        });
+      }
+
+      async function loadUsers() {
+        try {
+          const data = await fetch("http://localhost:3000/api/users", {
+            headers: { Authorization: token },
+          }).then((r) => r.json());
+
+          document.getElementById("userList").innerHTML = data
+            .map(
+              (x) => `
+      <li>
+        ${x.username} - ${x.role}
+        <select onchange="ubahRole(${x.id}, this.value)">
+          <option value="member" ${x.role === "member" ? "selected" : ""}>member</option>
+          <option value="operator" ${x.role === "operator" ? "selected" : ""}>operator</option>
+          <option value="admin" ${x.role === "admin" ? "selected" : ""}>admin</option>
+        </select>
+      </li>
+    `,
+            )
+            .join("");
+        } catch (err) {
+          alert("Gagal load user");
+        }
+      }
+
+      /* ================= MEMBER ================= */
+      async function loadMember() {
+        document.getElementById("memberUI").style.display = "block";
+
+        const data = await fetch("http://localhost:3000/api/jadwal/my", {
+          headers: { Authorization: token },
+        }).then((r) => r.json());
+
+        myBooking.innerHTML = data
+          .map(
+            (x) =>
+              `<li>
+      ${x.tanggal} ${x.jam_mulai} - 
+      <span style="
+         color:${
+          x.status==='done'?'green':
+          x.status==='ongoing'?'orange':
+          x.status==='cancelled'?'red':'black'
+         }">
+      ${x.status}
+      </span>
+      <button onclick="cancel(${x.id})">Cancel</button>
+    </li>`,
+          )
+          .join("");
+      }
+
+      async function booking() {
+        const res = await fetch("http://localhost:3000/api/jadwal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({
+            lapangan_id: parseInt(lapangan_id.value),
+            tanggal: tanggal.value,
+            jam_mulai: jam_mulai.value,
+            jam_selesai: jam_selesai.value,
+          }),
+        });
+
+        if (!res.ok) {
+          const msg = await res.text();
+          alert(msg);
+          return;
+        }
+
+        alert("Booking berhasil");
+        loadData();
+        loadMember();
+      }
+
+      function cancel(id) {
+        fetch(`http://localhost:3000/api/jadwal/cancel/${id}`, {
+          method: "PUT",
+          headers: { Authorization: token },
+        }).then(() => loadMember());
+      }
+
+      /* ================= OPERATOR ================= */
+      async function loadOperator() {
+        document.getElementById("operatorUI").style.display = "block";
+
+        const data = await fetch("http://localhost:3000/api/jadwal/all", {
+          headers: { Authorization: token },
+        }).then((r) => r.json());
+
+        allSesi.innerHTML = data
+          .map(
+            (x) =>
+              `<li>
+      ${x.tanggal} ${x.jam_mulai} - 
+      <span style="
+         color:${
+          x.status==='done'?'green':
+          x.status==='ongoing'?'orange':
+          x.status==='cancelled'?'red':'black'
+         }">
+      ${x.status}
+      </span>
+      <button onclick="start(${x.id})">Start</button>
+      <button onclick="done(${x.id})">Done</button>
+    </li>`,
+          )
+          .join("");
+      }
+
+      function start(id) {
+        fetch(`http://localhost:3000/api/jadwal/start/${id}`, {
+          method: "PUT",
+          headers: { Authorization: token },
+        }).then(() => loadOperator());
+      }
+
+      function done(id) {
+        fetch(`http://localhost:3000/api/jadwal/done/${id}`, {
+          method: "PUT",
+          headers: { Authorization: token },
+        }).then(() => loadOperator());
+      }
+    </script>
+  </body>
+</html>

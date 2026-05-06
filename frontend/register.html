@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+</head>
+<body>
+
+<h2>Register</h2>
+
+<input id="username" placeholder="Username"><br>
+<input id="password" type="password" placeholder="Password"><br>
+
+<select id="role">
+  <option value="admin">Admin</option>
+  <option value="member">Member</option>
+  <option value="operator">Operator</option>
+</select><br><br>
+
+<button onclick="register()">Register</button>
+
+<script>
+async function register() {
+  const res = await fetch('http://localhost:3000/api/auth/register', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value,
+      role: role.value
+    })
+  });
+
+  alert('Register berhasil');
+  window.location.href = 'index.html';
+}
+</script>
+
+</body>
+</html>
