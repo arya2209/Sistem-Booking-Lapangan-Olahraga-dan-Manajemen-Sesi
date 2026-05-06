@@ -53,4 +53,85 @@ router.get('/my', auth(['member']), (req, res) => {
   );
 });
 
+// ================= OPERATOR =================
+
+// ambil semua jadwal
+router.get('/all', auth(['operator']), (req, res) => {
+  db.query(
+    'SELECT * FROM jadwal',
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json(result);
+    }
+  );
+});
+
+// start sesi
+router.put('/start/:id', auth(['operator']), (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    "UPDATE jadwal SET status='ongoing' WHERE id=?",
+    [id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: "Sesi dimulai" });
+    }
+  );
+});
+
+// selesai sesi
+router.put('/done/:id', auth(['operator']), (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    "UPDATE jadwal SET status='done' WHERE id=?",
+    [id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: "Sesi selesai" });
+    }
+  );
+});
+
+// cancel
+router.put('/cancel/:id', auth(['member','admin']), (req, res) => {
+  db.query(
+    "UPDATE jadwal SET status='cancelled' WHERE id=?",
+    [req.params.id],
+    (err) => {
+      if (err) {
+        console.log("ERROR:", err);
+        return res.status(500).json({ message: err.message });
+      }
+
+      res.json({ message: "Booking dibatalkan" });
+    }
+  );
+});
+
+// start
+router.put('/start/:id', auth(['operator']), (req, res) => {
+  db.query(
+    "UPDATE jadwal SET status='ongoing' WHERE id=?",
+    [req.params.id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: "Sesi dimulai" });
+    }
+  );
+});
+
+// done
+router.put('/done/:id', auth(['operator']), (req, res) => {
+  db.query(
+    "UPDATE jadwal SET status='done' WHERE id=?",
+    [req.params.id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: "Selesai" });
+    }
+  );
+});
+
 module.exports = router;

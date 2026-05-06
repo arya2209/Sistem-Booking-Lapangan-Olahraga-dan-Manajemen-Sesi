@@ -1,39 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register</title>
+
+  <style>
+  * {
+    box-sizing: border-box; 
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.65);    padding: 30px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  input, button {
+    width: 100%;
+    padding: 12px; /* samakan */
+    margin: 8px 0;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  input {
+    border: 1px solid #ccc;
+    outline: none;
+  }
+
+  input:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 5px rgba(79,172,254,0.5);
+  }
+
+  button {
+    border: none;
+    background: #4facfe;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #2f80ed;
+  }
+
+  .login-link {
+    margin-top: 15px;
+    font-size: 14px;
+  }
+</style>
 </head>
+
 <body>
 
-<h2>Register</h2>
+  <div class="card">
+    <h2>Register</h2>
 
-<input id="username" placeholder="Username"><br>
-<input id="password" type="password" placeholder="Password"><br>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
 
-<select id="role">
-  <option value="admin">Admin</option>
-  <option value="member">Member</option>
-  <option value="operator">Operator</option>
-</select><br><br>
+    <button onclick="register()">Register</button>
 
-<button onclick="register()">Register</button>
+    <div class="login-link">
+      Sudah punya akun? <a href="index.html">Login</a>
+    </div>
+  </div>
 
-<script>
-async function register() {
-  const res = await fetch('http://localhost:3000/api/auth/register', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value,
-      role: role.value
-    })
-  });
+  <script>
+    async function register() {
+      const res = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.value,
+          password: password.value
+        })
+      });
 
-  alert('Register berhasil');
-  window.location.href = 'index.html';
-}
-</script>
+      if (res.ok) {
+        alert('Register berhasil');
+        window.location.href = 'index.html';
+      } else {
+        alert('Register gagal');
+      }
+    }
+  </script>
 
 </body>
 </html>

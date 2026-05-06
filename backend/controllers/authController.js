@@ -1,28 +1,25 @@
-const db = require('../config/db');
-const bcrypt = require('bcrypt');
-const userModel = require('../models/userModel');
+const db = require("../config/db");
+const bcrypt = require("bcrypt");
+const userModel = require("../models/userModel");
 
 exports.register = async (req, res) => {
   const { username, password, role } = req.body;
 
   const hashed = await bcrypt.hash(password, 10);
 
-  userModel.createUser(
-    { username, password: hashed, role },
-    (err) => {
-      if (err) return res.status(500).send(err);
-      res.send('Register berhasil');
-    }
-  );
+  userModel.createUser({ username, password: hashed, role }, (err) => {
+    if (err) return res.status(500).send(err);
+    res.send("Register berhasil");
+  });
 };
 
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 exports.login = (req, res) => {
   const { username, password } = req.body;
 
   db.query(
-    'SELECT * FROM users WHERE username=?',
+    "SELECT * FROM users WHERE username=?",
     [username],
     async (err, result) => {
       if (err) return res.status(500).json(err);
@@ -40,11 +37,16 @@ exports.login = (req, res) => {
       }
 
       const token = jwt.sign(
-        { id: user.id, role: user.role },
-        process.env.JWT_SECRET
+        {
+          id: user.id,
+          username: user.username, // ← INI WAJIB DITAMBAH
+          role: user.role,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" },
       );
 
       res.json({ token });
-    }
+    },
   );
 };
