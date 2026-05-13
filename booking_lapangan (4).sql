@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 06, 2026 at 07:08 AM
+-- Generation Time: May 13, 2026 at 07:22 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,10 @@ CREATE TABLE `jadwal` (
 
 INSERT INTO `jadwal` (`id`, `lapangan_id`, `user_id`, `tanggal`, `jam_mulai`, `jam_selesai`, `status`) VALUES
 (4, 1, 7, '2026-05-06', '10:00:00', '12:00:00', 'cancelled'),
-(5, 2, 7, '2026-05-06', '12:00:00', '13:00:00', 'booked');
+(5, 2, 7, '2026-05-06', '12:00:00', '13:00:00', 'done'),
+(6, 1, 9, '2026-05-13', '10:00:00', '13:00:00', 'done'),
+(7, 3, 10, '2026-05-14', '13:00:00', '15:00:00', 'ongoing'),
+(8, 1, 7, '2026-05-14', '12:00:00', '15:00:00', 'cancelled');
 
 -- --------------------------------------------------------
 
@@ -87,7 +90,9 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `password`, `role`) VALUES
 (6, 'arya', '$2b$10$s4GlSaeZ/h15r8vEoOhC0OJkpsi3p9vj4dK.etXXOFSXzqubzQWAO', 'admin'),
 (7, 'rani', '$2b$10$7pIM8CE2W50UYKAsTRHy5.cYPL/YO3lvUsYqI9GRRN03EdQUatrki', 'member'),
-(8, 'cilo', '$2b$10$JFF.aTkYx1pPHKiaYCAh6.fCYuQtr7e9HRTQZE0.KSSpBUWwVfjPG', 'operator');
+(8, 'cilo', '$2b$10$JFF.aTkYx1pPHKiaYCAh6.fCYuQtr7e9HRTQZE0.KSSpBUWwVfjPG', 'operator'),
+(9, 'mimi', '$2b$10$onSnmG1FWJYWInEDTFaN3u.9AThbF1fy2Oa0WiGsI6wSs3vcyS8VW', 'member'),
+(10, 'momo', '$2b$10$hPXA//fdG1QVLIJBKyPSNO2vCnsN74omJsaaZ91Zqs7wvPrp0WEdm', 'member');
 
 --
 -- Indexes for dumped tables
@@ -122,7 +127,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `jadwal`
 --
 ALTER TABLE `jadwal`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `lapangan`
@@ -134,7 +139,7 @@ ALTER TABLE `lapangan`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
