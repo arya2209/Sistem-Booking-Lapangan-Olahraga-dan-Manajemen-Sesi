@@ -53,9 +53,32 @@
 
       .container {
         flex: 1;
-        max-width: 900px;
+        width: 95%;
+        max-width: 1400px;
         margin: 20px auto;
-        padding: 10px;
+        padding: 20px;
+      }
+
+      .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        width: 100%;
+      }
+
+      @media (max-width: 768px) {
+        .admin-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .user-card {
+        max-height: 425px;
+        overflow-y: auto;
+      }
+
+      .user-card ul {
+        padding-right: 5px;
       }
 
       canvas {
@@ -121,19 +144,33 @@
     <div class="container">
       <!-- ADMIN -->
       <div id="adminUI" style="display: none">
-        <button onclick="loadData()">Refresh Data</button>
+        <div style="text-align: center; margin-bottom: 20px">
+          <button onclick="loadData()" style="max-width: 250px">
+            Refresh Data
+          </button>
+        </div>
 
-        <h3>Manajemen User</h3>
-        <ul id="userList"></ul>
+        <div class="admin-grid">
+          <div class="card user-card">
+            <h3>Manajemen User</h3>
+            <ul id="userList"></ul>
+          </div>
 
-        <h3>Okupansi Lapangan</h3>
-        <canvas id="okupansiChart"></canvas>
+          <div class="card">
+            <h3>Okupansi Lapangan</h3>
+            <canvas id="okupansiChart"></canvas>
+          </div>
 
-        <h3>Peak Hour</h3>
-        <canvas id="peakChart"></canvas>
+          <div class="card">
+            <h3>Peak Hour</h3>
+            <canvas id="peakChart"></canvas>
+          </div>
 
-        <h3>Pembatalan</h3>
-        <canvas id="cancelChart"></canvas>
+          <div class="card">
+            <h3>Pembatalan</h3>
+            <canvas id="cancelChart"></canvas>
+          </div>
+        </div>
       </div>
 
       <!-- MEMBER -->
@@ -290,31 +327,39 @@
           el.innerHTML = data
             .map(
               (x) => `
-  <li>
-    ${formatTanggal(x.tanggal)} 
-    ${formatJam(x.jam_mulai)} - ${formatJam(x.jam_selesai)}
-    
-    <b style="
-      color:
-        ${
-          x.status === "done"
-            ? "green"
-            : x.status === "ongoing"
-              ? "orange"
-              : x.status === "cancelled"
-                ? "red"
-                : "black"
-        }
-    ">
-      ${x.status}
-    </b>
+<li>
+  <b>User:</b> ${x.username}<br>
 
-    ${
-      x.status === "booked"
-        ? `<button onclick="cancel(${x.id})">Cancel</button>`
-        : ""
-    }
-  </li>
+  ${formatTanggal(x.tanggal)}
+  ${formatJam(x.jam_mulai)} - ${formatJam(x.jam_selesai)}
+
+  <b style="
+    color:
+      ${
+        x.status === "done"
+          ? "green"
+          : x.status === "ongoing"
+            ? "orange"
+            : x.status === "cancelled"
+              ? "red"
+              : "black"
+      }
+  ">
+    ${x.status}
+  </b>
+
+  ${
+    x.status === "booked"
+      ? `<button onclick="start(${x.id})">Start</button>`
+      : ""
+  }
+
+  ${
+    x.status === "ongoing"
+      ? `<button onclick="done(${x.id})">Done</button>`
+      : ""
+  }
+</li>
 `,
             )
             .join("");
